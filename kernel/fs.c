@@ -207,6 +207,9 @@ struct inode *ialloc(uint dev, short type)
         { // a free inode
             memset(dip, 0, sizeof(*dip));
             dip->type = type;
+            //Loretta
+            dip->mode = M_ALL;
+
             log_write(bp); // mark it allocated on the disk
             brelse(bp);
             return iget(dev, inum);
@@ -229,10 +232,13 @@ void iupdate(struct inode *ip)
     bp = bread(ip->dev, IBLOCK(ip->inum, sb));
     dip = (struct dinode *)bp->data + ip->inum % IPB;
     dip->type = ip->type;
-    dip->major = ip->major;
-    dip->minor = ip->minor;
+    //Loretta
+    // dip->major = ip->major;
+    // dip->minor = ip->minor;
     dip->nlink = ip->nlink;
     dip->size = ip->size;
+    //Loretta
+    dip->mode = ip->mode;
     memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
     log_write(bp);
     brelse(bp);
@@ -303,10 +309,13 @@ void ilock(struct inode *ip)
         bp = bread(ip->dev, IBLOCK(ip->inum, sb));
         dip = (struct dinode *)bp->data + ip->inum % IPB;
         ip->type = dip->type;
-        ip->major = dip->major;
-        ip->minor = dip->minor;
+        //Loretta
+        // ip->major = dip->major;
+        // ip->minor = dip->minor;
         ip->nlink = dip->nlink;
         ip->size = dip->size;
+        //Loretta
+        ip->mode = dip->mode;
         memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
         brelse(bp);
         ip->valid = 1;
@@ -471,6 +480,8 @@ void stati(struct inode *ip, struct stat *st)
     st->type = ip->type;
     st->nlink = ip->nlink;
     st->size = ip->size;
+    //Loretta
+    st->mode = ip->mode;
 }
 
 // Read data from inode.
