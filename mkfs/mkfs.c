@@ -83,6 +83,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Usage: mkfs fs.img files...\n");
         exit(1);
     }
+    //Loretta
+    printf("sizeof(struct dinode): %lu\n", sizeof(struct dinode));
+
 
     assert((BSIZE % sizeof(struct dinode)) == 0);
     assert((BSIZE % sizeof(struct dirent)) == 0);
@@ -246,6 +249,16 @@ uint ialloc(ushort type)
     din.type = xshort(type);
     din.nlink = xshort(1);
     din.size = xint(0);
+
+    //Loretta
+    if (type == T_FILE) {
+        // 可執行檔設成唯讀（r-）
+        din.mode = xshort(M_READ);
+    } else {
+        // 其他一律 rw
+        din.mode = xshort(M_READ | M_WRITE);
+    }
+
     winode(inum, &din);
     return inum;
 }

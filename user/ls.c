@@ -3,6 +3,18 @@
 #include "user/user.h"
 #include "kernel/fs.h"
 
+//Loretta: add a perm_str
+
+char* perm_str(short mode)
+{
+    static char str[3];
+    str[0] = (mode & M_READ)  ? 'r' : '-';
+    str[1] = (mode & M_WRITE) ? 'w' : '-';
+    str[2] = '\0';
+    return str;
+}
+
+
 char *fmtname(char *path)
 {
     static char buf[DIRSIZ + 1];
@@ -42,10 +54,20 @@ void ls(char *path)
         return;
     }
 
+    //Loretta
+    if ((st.mode & M_READ) == 0) {
+        fprintf(2, "ls: cannot open %s\n", path);
+        close(fd);
+        return;
+    }
+
     switch (st.type)
     {
     case T_FILE:
-        printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
+        //Loretta 
+        // printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
+        printf("%s %d %d %l %s\n", fmtname(path), st.type, st.ino, st.size, perm_str(st.mode));
+
         break;
 
     case T_DIR:
@@ -68,7 +90,10 @@ void ls(char *path)
                 printf("ls: cannot stat %s\n", buf);
                 continue;
             }
-            printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+            //Loretta
+            // printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.mode));
+
         }
         break;
     }
