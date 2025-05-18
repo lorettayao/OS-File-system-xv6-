@@ -34,6 +34,8 @@ struct inode
     short nlink;
     uint size;
     uint addrs[NDIRECT + 1];
+    //Loretta
+    short mode;
 };
 
 // map major device number to device functions.
