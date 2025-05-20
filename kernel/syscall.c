@@ -107,6 +107,8 @@ extern uint64 sys_raw_write(void);
 extern uint64 sys_force_disk_fail(void);
 /* TODO: Access Control & Symbolic Link */
 extern uint64 sys_symlink(void);
+//Loretta
+extern uint64 sys_chmod(void);
 
 static uint64 (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -137,6 +139,7 @@ static uint64 (*syscalls[])(void) = {
     [SYS_get_disk_lbn] sys_get_disk_lbn,
     [SYS_raw_write] sys_raw_write,
     [SYS_force_disk_fail] sys_force_disk_fail,
+    [SYS_chmod] sys_chmod,
 };
 
 void syscall(void)

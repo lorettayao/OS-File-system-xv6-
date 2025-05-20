@@ -505,25 +505,33 @@ uint64 sys_pipe(void)
 }
 
 /* TODO: Access Control & Symbolic Link */
-uint64 sys_chmod(void)
+uint64
+sys_chmod(void)
 {
-    /* just for your reference, change it if you want to */
+    char path[MAXPATH];
+    int mode, is_add, recursive;
+    struct inode *ip;
 
-    // char path[MAXPATH];
-    // int mode;
-    // struct inode *ip;
+    if (argstr(0, path, MAXPATH) < 0 ||
+        argint(1, &mode) < 0 ||
+        argint(2, &is_add) < 0 ||
+        argint(3, &recursive) < 0)
+        return -1;
 
-    // begin_op();
-    // if (argstr(0, path, MAXPATH) < 0 || argint(1, &mode) < 0 ||
-    //     (ip = namei(path)) == 0)
-    // {
-    //     end_op();
-    //     return -1;
-    // }
-    // end_op();
+    begin_op();
+    ip = namei(path);
+    if (ip == 0) {
+        end_op();
+        return -1;
+    }
 
-    return 0;
+    ilock(ip);
+    int r = chmod_inode(ip, mode, is_add, recursive);
+    iunlockput(ip);
+    end_op();
+    return r;
 }
+
 
 /* TODO: Access Control & Symbolic Link */
 // Loretta

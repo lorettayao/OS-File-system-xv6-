@@ -45,3 +45,5 @@ entry("raw_write");
 entry("force_disk_fail");
 # TODO: Access Control
 entry("symlink");
+# Loretta
+entry("chmod");

@@ -28,5 +28,5 @@
 #define SYS_force_disk_fail 27
 
 /* TODO: Access Control & Symbolic Link */
-// #define SYS_chmod 28
+#define SYS_chmod 28
 #define SYS_symlink 29
