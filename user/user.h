@@ -25,6 +25,9 @@ int sleep(int);
 int uptime(void);
 /* TODO: Access Control & Symbolic Link */
 int symlink(const char *, const char *);
+// Loretta
+int chmod(const char *path, int mode, int is_add, int recursive);
+
 
 int force_fail(int pbn);
 int get_force_fail(void);

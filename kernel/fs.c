@@ -21,6 +21,7 @@
 #include "buf.h"
 #include "file.h"
 
+
 #define min(a, b) ((a) < (b) ? (a) : (b))
 // there should be one superblock per disk device, but we run with
 // only one device
@@ -218,6 +219,56 @@ struct inode *ialloc(uint dev, short type)
     }
     panic("ialloc: no inodes");
 }
+
+int chperm(char *path, int mode, int is_add, int recursive)
+{
+    struct inode *ip;
+
+    begin_op();
+    if ((ip = namei(path)) == 0) {
+        end_op();
+        return -1;
+    }
+
+    ilock(ip);
+
+    if (is_add)
+        ip->perm |= mode;
+    else
+        ip->perm &= ~mode;
+
+    iupdate(ip);  // 將 inode 寫回磁碟
+
+    if (recursive && ip->type == T_DIR) {
+        // 遞迴處理目錄下所有內容
+        struct dirent de;
+        for (int off = 0; off < ip->size; off += sizeof(de)) {
+            if (readi(ip, 0, (uint64)&de, off, sizeof(de)) != sizeof(de))
+                continue;
+            if (de.inum == 0 || strncmp(de.name, ".", DIRSIZ) == 0 || strncmp(de.name, "..", DIRSIZ) == 0
+            )
+                continue;
+
+            char child_path[MAXPATH];
+            // snprintf(child_path, sizeof(child_path), "%s/%s", path, de.name);
+            memset(child_path, 0, sizeof(child_path));
+            safestrcpy(child_path, path, sizeof(child_path));
+            int len = strlen(child_path);
+            if (child_path[len - 1] != '/')
+                child_path[len++] = '/';
+            safestrcpy(child_path + len, de.name, sizeof(child_path) - len);
+
+            iunlock(ip);
+            chperm(child_path, mode, is_add, recursive);
+            ilock(ip); // 回到當前目錄，繼續迴圈
+        }
+    }
+
+    iunlockput(ip);
+    end_op();
+    return 0;
+}
+
 
 /* TODO: Access Control & Symbolic Link */
 // Copy a modified in-memory inode to disk.

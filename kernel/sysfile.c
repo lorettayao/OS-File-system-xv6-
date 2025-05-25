@@ -505,31 +505,26 @@ uint64 sys_pipe(void)
 }
 
 /* TODO: Access Control & Symbolic Link */
+extern int chperm(char *path, int mode, int is_add, int recursive);
+
 uint64
 sys_chmod(void)
 {
     char path[MAXPATH];
-    int mode, is_add, recursive;
-    struct inode *ip;
+    int mode;
+    int is_add;
+    int recursive;
 
-    if (argstr(0, path, MAXPATH) < 0 ||
-        argint(1, &mode) < 0 ||
-        argint(2, &is_add) < 0 ||
-        argint(3, &recursive) < 0)
+    if (argstr(0, path, MAXPATH) < 0)
+        return -1;
+    if (argint(1, &mode) < 0)
+        return -1;
+    if (argint(2, &is_add) < 0)
+        return -1;
+    if (argint(3, &recursive) < 0)
         return -1;
 
-    begin_op();
-    ip = namei(path);
-    if (ip == 0) {
-        end_op();
-        return -1;
-    }
-
-    ilock(ip);
-    int r = chmod_inode(ip, mode, is_add, recursive);
-    iunlockput(ip);
-    end_op();
-    return r;
+    return chperm(path, mode, is_add, recursive);
 }
 
 
