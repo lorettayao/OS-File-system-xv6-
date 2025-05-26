@@ -40,7 +40,8 @@ struct dinode
     
     //Loretta
     short mode;               // File mode
-    short _pad;              // <== padding to make struct size divisible by 4
+    // short _pad;              // <== padding to make struct size divisible by 4
+    short perm;               // File permission bits
 };
 
 // Inodes per block.

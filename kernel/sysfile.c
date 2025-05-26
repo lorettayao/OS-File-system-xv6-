@@ -74,6 +74,11 @@ uint64 sys_read(void)
 
     if (argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argaddr(1, &p) < 0)
         return -1;
+    //Loretta
+    if (!(f->ip->perm & M_READ)) {
+        printf("read: permission denied\n");
+        return -1;
+        }
     return fileread(f, p, n);
 }
 
@@ -85,6 +90,11 @@ uint64 sys_write(void)
 
     if (argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argaddr(1, &p) < 0)
         return -1;
+    //Loretta
+    if (!(f->ip->perm & M_WRITE)) {
+        printf("write: permission denied\n");
+        return -1;
+    }
 
     return filewrite(f, p, n);
 }
@@ -505,27 +515,25 @@ uint64 sys_pipe(void)
 }
 
 /* TODO: Access Control & Symbolic Link */
+// e
+
+// sysfile.c
 extern int chperm(char *path, int mode, int is_add, int recursive);
 
-uint64
-sys_chmod(void)
-{
+int sys_chmod(void) {
     char path[MAXPATH];
-    int mode;
-    int is_add;
-    int recursive;
+    int mode, is_add, recursive;
 
-    if (argstr(0, path, MAXPATH) < 0)
-        return -1;
-    if (argint(1, &mode) < 0)
-        return -1;
-    if (argint(2, &is_add) < 0)
-        return -1;
-    if (argint(3, &recursive) < 0)
+    if (argstr(0, path, MAXPATH) < 0 ||
+        argint(1, &mode) < 0 ||
+        argint(2, &is_add) < 0 ||
+        argint(3, &recursive) < 0)
         return -1;
 
     return chperm(path, mode, is_add, recursive);
 }
+
+
 
 
 /* TODO: Access Control & Symbolic Link */

@@ -251,13 +251,16 @@ uint ialloc(ushort type)
     din.size = xint(0);
 
     //Loretta
-    if (type == T_FILE) {
-        // 可執行檔設成唯讀（r-）
-        din.mode = xshort(M_READ);
-    } else {
-        // 其他一律 rw
-        din.mode = xshort(M_READ | M_WRITE);
-    }
+    // if (type == T_FILE) {
+    //     // 可執行檔設成唯讀（r-）
+    //     din.mode = xshort(M_READ);
+    // } else {
+    //     // 其他一律 rw
+    //     din.mode = xshort(M_READ | M_WRITE);
+    //     din.perm = xshort(M_READ | M_WRITE); // default permission
+    // }
+    din.mode = xshort(M_READ | M_WRITE);
+    din.perm = xshort(M_READ | M_WRITE); // default permission
 
     winode(inum, &din);
     return inum;

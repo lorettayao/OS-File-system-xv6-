@@ -47,6 +47,7 @@
         "exception": "c",
         "system_error": "c",
         "file.h": "c",
-        "algorithm": "c"
+        "algorithm": "c",
+        "fs.h": "c"
     }
 }

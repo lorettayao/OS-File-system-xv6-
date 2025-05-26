@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
 
     char *mode_str = argv[arg_idx];
     char *path = argv[arg_idx + 1];
+    printf("Calling chmod on path = %s\n", path);
+
 
     int mode, is_add;
     if (parse_mode(mode_str, &mode, &is_add) < 0)

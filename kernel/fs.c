@@ -210,6 +210,7 @@ struct inode *ialloc(uint dev, short type)
             dip->type = type;
             //Loretta
             dip->mode = M_ALL;
+            dip->perm = M_READ | M_WRITE; // default permission
 
             log_write(bp); // mark it allocated on the disk
             brelse(bp);
@@ -220,12 +221,66 @@ struct inode *ialloc(uint dev, short type)
     panic("ialloc: no inodes");
 }
 
+// int chperm(char *path, int mode, int is_add, int recursive)
+// {
+//     printf("chperm: path = %s, mode = %d, is_add = %d, recursive = %d\n", path, mode, is_add, recursive);
+
+//     struct inode *ip;
+
+//     begin_op();
+//     if ((ip = namei(path)) == 0) {
+//         printf("chperm: namei failed for path = %s\n", path);
+//         end_op();
+//         return -1;
+//     }
+
+//     ilock(ip);
+
+//     if (is_add)
+//         ip->perm |= mode;
+//     else
+//         ip->perm &= ~mode;
+
+//     iupdate(ip);  // 將 inode 寫回磁碟
+
+//     if (recursive && ip->type == T_DIR) {
+//         // 遞迴處理目錄下所有內容
+//         struct dirent de;
+//         for (int off = 0; off < ip->size; off += sizeof(de)) {
+//             if (readi(ip, 0, (uint64)&de, off, sizeof(de)) != sizeof(de))
+//                 continue;
+//             if (de.inum == 0 || strncmp(de.name, ".", DIRSIZ) == 0 || strncmp(de.name, "..", DIRSIZ) == 0
+//             )
+//                 continue;
+
+//             char child_path[MAXPATH];
+//             // snprintf(child_path, sizeof(child_path), "%s/%s", path, de.name);
+//             memset(child_path, 0, sizeof(child_path));
+//             safestrcpy(child_path, path, sizeof(child_path));
+//             int len = strlen(child_path);
+//             if (child_path[len - 1] != '/')
+//                 child_path[len++] = '/';
+//             safestrcpy(child_path + len, de.name, sizeof(child_path) - len);
+
+//             iunlock(ip);
+//             chperm(child_path, mode, is_add, recursive);
+//             ilock(ip); // 回到當前目錄，繼續迴圈
+//         }
+//     }
+
+//     iunlockput(ip);
+//     end_op();
+//     return 0;
+// }
 int chperm(char *path, int mode, int is_add, int recursive)
 {
     struct inode *ip;
+    printf("Loretta:");
+    printf("chperm: path = %s, mode = %d, is_add = %d, recursive = %d\n", path, mode, is_add, recursive);
 
     begin_op();
     if ((ip = namei(path)) == 0) {
+        printf("chperm: namei failed for path = %s\n", path);
         end_op();
         return -1;
     }
@@ -237,20 +292,18 @@ int chperm(char *path, int mode, int is_add, int recursive)
     else
         ip->perm &= ~mode;
 
-    iupdate(ip);  // 將 inode 寫回磁碟
+    iupdate(ip);
 
     if (recursive && ip->type == T_DIR) {
-        // 遞迴處理目錄下所有內容
         struct dirent de;
         for (int off = 0; off < ip->size; off += sizeof(de)) {
             if (readi(ip, 0, (uint64)&de, off, sizeof(de)) != sizeof(de))
                 continue;
             if (de.inum == 0 || strncmp(de.name, ".", DIRSIZ) == 0 || strncmp(de.name, "..", DIRSIZ) == 0
-            )
+                        )
                 continue;
 
             char child_path[MAXPATH];
-            // snprintf(child_path, sizeof(child_path), "%s/%s", path, de.name);
             memset(child_path, 0, sizeof(child_path));
             safestrcpy(child_path, path, sizeof(child_path));
             int len = strlen(child_path);
@@ -260,7 +313,7 @@ int chperm(char *path, int mode, int is_add, int recursive)
 
             iunlock(ip);
             chperm(child_path, mode, is_add, recursive);
-            ilock(ip); // 回到當前目錄，繼續迴圈
+            ilock(ip);
         }
     }
 
@@ -290,6 +343,7 @@ void iupdate(struct inode *ip)
     dip->size = ip->size;
     //Loretta
     dip->mode = ip->mode;
+    dip->perm = ip->perm;
     memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
     log_write(bp);
     brelse(bp);
@@ -367,6 +421,7 @@ void ilock(struct inode *ip)
         ip->size = dip->size;
         //Loretta
         ip->mode = dip->mode;
+        ip->perm = dip->perm;
         memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
         brelse(bp);
         ip->valid = 1;
@@ -543,6 +598,7 @@ int readi(struct inode *ip, int user_dst, uint64 dst, uint off, uint n)
 {
     uint tot, m;
     struct buf *bp;
+
 
     if (off > ip->size || off + n < off)
         return 0;
