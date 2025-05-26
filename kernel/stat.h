@@ -17,4 +17,5 @@ struct stat
     uint64 size; // Size of file in bytes
     //Loretta
     short mode; // File mode
+    short perm; // File permission bits
 };

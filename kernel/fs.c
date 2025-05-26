@@ -588,6 +588,7 @@ void stati(struct inode *ip, struct stat *st)
     st->size = ip->size;
     //Loretta
     st->mode = ip->mode;
+    st->perm = ip->perm; // file permission bits
 }
 
 // Read data from inode.

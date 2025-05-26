@@ -5,11 +5,11 @@
 
 //Loretta: add a perm_str
 
-char* perm_str(short mode)
+char* perm_str(short perm)
 {
     static char str[3];
-    str[0] = (mode & M_READ)  ? 'r' : '-';
-    str[1] = (mode & M_WRITE) ? 'w' : '-';
+    str[0] = (perm & M_READ)  ? 'r' : '-';
+    str[1] = (perm & M_WRITE) ? 'w' : '-';
     str[2] = '\0';
     return str;
 }
@@ -55,7 +55,7 @@ void ls(char *path)
     }
 
     //Loretta
-    if ((st.mode & M_READ) == 0) {
+    if ((st.perm & M_READ) == 0) {
         fprintf(2, "ls: cannot open %s\n", path);
         close(fd);
         return;
@@ -66,7 +66,7 @@ void ls(char *path)
     case T_FILE:
         //Loretta 
         // printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
-        printf("%s %d %d %l %s\n", fmtname(path), st.type, st.ino, st.size, perm_str(st.mode));
+        printf("%s %d %d %l %s\n", fmtname(path), st.type, st.ino, st.size, perm_str(st.perm));
 
         break;
 
@@ -92,7 +92,7 @@ void ls(char *path)
             }
             //Loretta
             // printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
-            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.mode));
+            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.perm));
 
         }
         break;

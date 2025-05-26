@@ -9,13 +9,13 @@ Disassembly of section .text:
 
 //Loretta: add a perm_str
 
-char* perm_str(short mode)
+char* perm_str(short perm)
 {
    0:	1141                	addi	sp,sp,-16
    2:	e422                	sd	s0,8(sp)
    4:	0800                	addi	s0,sp,16
     static char str[3];
-    str[0] = (mode & M_READ)  ? 'r' : '-';
+    str[0] = (perm & M_READ)  ? 'r' : '-';
    6:	03051793          	slli	a5,a0,0x30
    a:	93c1                	srli	a5,a5,0x30
    c:	8905                	andi	a0,a0,1
@@ -24,7 +24,7 @@ char* perm_str(short mode)
   14:	02d00713          	li	a4,45
   18:	00001697          	auipc	a3,0x1
   1c:	bce68823          	sb	a4,-1072(a3) # be8 <str.1>
-    str[1] = (mode & M_WRITE) ? 'w' : '-';
+    str[1] = (perm & M_WRITE) ? 'w' : '-';
   20:	8b89                	andi	a5,a5,2
   22:	07700713          	li	a4,119
   26:	e399                	bnez	a5,2c <perm_str+0x2c>
@@ -170,8 +170,8 @@ void ls(char *path)
     }
 
     //Loretta
-    if ((st.mode & M_READ) == 0) {
- 14a:	d8845783          	lhu	a5,-632(s0)
+    if ((st.perm & M_READ) == 0) {
+ 14a:	d8a45783          	lhu	a5,-630(s0)
  14e:	8b85                	andi	a5,a5,1
  150:	c3f9                	beqz	a5,216 <ls+0x120>
         fprintf(2, "ls: cannot open %s\n", path);
@@ -190,7 +190,7 @@ void ls(char *path)
     case T_FILE:
         //Loretta 
         // printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
-        printf("%s %d %d %l %s\n", fmtname(path), st.type, st.ino, st.size, perm_str(st.mode));
+        printf("%s %d %d %l %s\n", fmtname(path), st.type, st.ino, st.size, perm_str(st.perm));
  166:	854a                	mv	a0,s2
  168:	00000097          	auipc	ra,0x0
  16c:	eda080e7          	jalr	-294(ra) # 42 <fmtname>
@@ -198,7 +198,7 @@ void ls(char *path)
  172:	d7841983          	lh	s3,-648(s0)
  176:	d7442a03          	lw	s4,-652(s0)
  17a:	d8043a83          	ld	s5,-640(s0)
- 17e:	d8841503          	lh	a0,-632(s0)
+ 17e:	d8a41503          	lh	a0,-630(s0)
  182:	00000097          	auipc	ra,0x0
  186:	e7e080e7          	jalr	-386(ra) # 0 <perm_str>
  18a:	87aa                	mv	a5,a0
@@ -299,7 +299,7 @@ void ls(char *path)
  284:	00198a13          	addi	s4,s3,1
  288:	02f00793          	li	a5,47
  28c:	00f98023          	sb	a5,0(s3)
-            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.mode));
+            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.perm));
  290:	00001a97          	auipc	s5,0x1
  294:	920a8a93          	addi	s5,s5,-1760 # bb0 <malloc+0x142>
                 printf("ls: cannot stat %s\n", buf);
@@ -337,7 +337,7 @@ void ls(char *path)
  2e8:	00000097          	auipc	ra,0x0
  2ec:	1ce080e7          	jalr	462(ra) # 4b6 <stat>
  2f0:	fa0549e3          	bltz	a0,2a2 <ls+0x1ac>
-            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.mode));
+            printf("%s %d %d %d %s\n", fmtname(buf), st.type, st.ino, st.size, perm_str(st.perm));
  2f4:	da040513          	addi	a0,s0,-608
  2f8:	00000097          	auipc	ra,0x0
  2fc:	d4a080e7          	jalr	-694(ra) # 42 <fmtname>
@@ -345,7 +345,7 @@ void ls(char *path)
  302:	d7841b83          	lh	s7,-648(s0)
  306:	d7442c03          	lw	s8,-652(s0)
  30a:	d8043c83          	ld	s9,-640(s0)
- 30e:	d8841503          	lh	a0,-632(s0)
+ 30e:	d8a41503          	lh	a0,-630(s0)
  312:	00000097          	auipc	ra,0x0
  316:	cee080e7          	jalr	-786(ra) # 0 <perm_str>
  31a:	87aa                	mv	a5,a0
